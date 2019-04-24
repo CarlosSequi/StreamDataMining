@@ -1,0 +1,8 @@
+"0","datosNaives = array(dim = 30)"
+"0","for (i in 1:30)"
+"0","{"
+"0","  nombreFichero = paste(c(paste(c(""nb"",i),collapse = """"),"".csv""),collapse="""")"
+"0","  nuevoFichero = read.csv(nombreFichero)"
+"0","  nuevoDato = nuevoFichero$classifications.correct..percent.[length(nuevoFichero$classifications.correct..percent.)]"
+"0","  datosNaives[i] = nuevoDato"
+"0","}"

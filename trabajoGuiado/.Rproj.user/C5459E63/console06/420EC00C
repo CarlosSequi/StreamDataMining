@@ -1,0 +1,25 @@
+[?25l[0mMicrosoft Windows [Versión 10.0.17763.437][0K
+(c) 2018 Microsoft Corporation. Todos los derechos reservados.[0K
+[0K
+E:\ETSIIT\MÁSTER\Series temporales y mineria de flujos de datos\practica mineri[0Ka
+ de flujos de datos\StreamDataMining\trabajoGuiado>[0K[0m[1;1H[2J[0m de flujos de datos\StreamDataMining\trabajoGuiado>hist(datosHoeffding, col="bl[0Ku[?25l
+e")[0K
+"hist" no se reconoce como un comando interno o externo,[0K
+programa o archivo por lotes ejecutable.[0K
+[0K
+E:\ETSIIT\MÁSTER\Series temporales y mineria de flujos de datos\practica mineri[0Ka
+ de flujos de datos\StreamDataMining\trabajoGuiado>[0K[?25h[?25l[6A de flujos de datos\StreamDataMining\trabajoGuiado>hist(datosHoeffding, col="blue")[0K
+"hist" no se reconoce como un comando interno o externo,[0K
+programa o archivo por lotes ejecutable.[0K
+[0K
+E:\ETSIIT\MÁSTER\Series temporales y mineria de flujos de datos\practica mineria de flujos de datos\StreamDataMining\trabajoGuiado>[0K
+[0K
+[0K[2A[132G[?25h[?25lE:\ETSIIT\MÁSTER\Series temporales y mineria de flujos de datos\practica mineria de flujos de datos\StreamDataMining\trabajoGuiado>shapiro.test(datosHoeffding)[0K
+"shapiro.test" no se reconoce como un comando interno o externo,[0K
+programa o archivo por lotes ejecutable.[0K
+[0K
+E:\ETSIIT\MÁSTER\Series temporales y mineria de flujos de datos\practica mineria de flujos de datos\StreamDataMining\trabajoGuiado>[0K[?25hlines(density(datosHoeffding))[0K[?25l
+"lines" no se reconoce como un comando interno o externo,[0K
+programa o archivo por lotes ejecutable.[0K
+[0K
+E:\ETSIIT\MÁSTER\Series temporales y mineria de flujos de datos\practica mineria de flujos de datos\StreamDataMining\trabajoGuiado>[0K[?25h
