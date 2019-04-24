@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1556134348941.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3012166001",
+    "id" : "CEFAE60F",
+    "lastKnownWriteTime" : 1556134948,
+    "last_content_update" : 1556134948342,
+    "path" : "E:/ETSIIT/MÁSTER/Series temporales y mineria de flujos de datos/practica mineria de flujos de datos/StreamDataMining/trabajoGuiado/DSM.Rmd",
+    "project_path" : "DSM.Rmd",
+    "properties" : {
+        "cursorPosition" : "7,0",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}
