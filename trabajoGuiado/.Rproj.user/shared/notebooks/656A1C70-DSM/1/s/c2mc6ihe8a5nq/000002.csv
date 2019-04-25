@@ -1,7 +1,7 @@
 "0","datosHoeffding = array(dim = 30)"
 "0","for (i in 1:30)"
 "0","{"
-"0","  nombreFichero = paste(c(paste(c(""HF"",i),collapse = """"),"".csv""),collapse="""")"
+"0","  nombreFichero = paste(c(paste(c(""./datosHoeffdingTrees/HF"",i),collapse = """"),"".csv""),collapse="""")"
 "0","  nuevoFichero = read.csv(nombreFichero)"
 "0","  nuevoDato = nuevoFichero$classifications.correct..percent.[length(nuevoFichero$classifications.correct..percent.)]"
 "0","  datosHoeffding[i] = nuevoDato"

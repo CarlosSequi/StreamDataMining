@@ -1,9 +1,13 @@
 ---
-title: "StreamDataMining"
+title: "Minería de Flujos de Datos: práctica guiada"
 author: "Carlos Manuel Sequí Sánchez"
 date: "24 de abril de 2019"
 output: pdf_document
 ---
+
+\textbf{DNI: 20 48 69 26 K}  
+\textbf{e-mail: sequi96@correo.ugr.es}
+
 
 \section{EJERCICIO 1 (clasificación). Se pide comparar la eficacia de un Hoeffding Tree con un clasificador Naïve Bayes, para un flujo de datos de 1.000.000 de instancias generadas con un generador RandomTreeGenerator, suponiendo una frecuencia de muestreo de 10.000 y con el método de evaluación Interleaved Test-Then-Train.} 
 
@@ -73,4 +77,99 @@ t.test(datosNaives,datosHoeffding)
 
 Tal como observamos, al ser el p-value inferior a 0.05, podemos decir con alta certeza que las medias de las dos poblaciones de datos difiere de manera significativa. Por esta misma razón, el mejor de los algoritmos que han generado estos grupos de datos es el que mejor porcentaje de aciertos promedio ha proporcionado, es decir, el algoritmo Hoeffding Trees.
 
-\section{EJERCICIO 2 (Concept Drift).}
+\section{EJERCICIO 2 (Concept Drift).Se pide generar 100.000 instancias utilizando el generador de datos SEAGenerator, con un desvío de concepto centrado en la instancia 20.000 en una ventana de 100 instancias. Para simular el desvío de concepto, hacer que el simulador genere la función –f 2 al principio, y luego la función –f 3.Usar un clasificador Naïve Bayes evaluado con una frecuencia de muestreo de 1.000 instancias, usando el método prequential para evaluación. Inserte la configuración directamente en la GUI de MOA para visualizar la gráfica de la evolución de la tasa de aciertos (medida accuracy). ¿Qué se observa?}
+
+La tarea es evaluar en prequential, sobre el modelo Naïve Bayes, generando 100.000 instancias con frecuencia de muestreo de 1.000.
+  \textbf{java -cp moa.jar -javaagent:sizeofag.jar moa.DoTask "EvaluatePrequential -l bayes.NaiveBayes -s (ConceptDriftStream -s (generators.SEAGenerator -f 2) -d (generators.SEAGenerator -f 3) -p 20000 -w 100) -i 100000 -f 1000" > conceptDrift1.csv}
+
+
+La gráfica de la evolución de la tasa de clasificación de MOA:
+```{r}
+conceptDrift1 = read.csv("./datosConceptDrift/conceptDrift1.csv")
+
+# Mostrar el acierto del clasificador en el tiempo
+plot(conceptDrift1$learning.evaluation.instances, conceptDrift1$classifications.correct..percent., "l", ylim = c(0,100), col = "red")
+```
+
+Se observa que, tras el fallo por el desvio de concepto, posteriormente el sistema trata de recuperarse aprendiendo los nuevos datos. Con la precisión:
+```{r}
+# mostramos los últimos valores de accuracy y de kappa
+# junto con los valores medios.
+
+# accuracy
+conceptDrift1$classifications.correct..percent.[length(conceptDrift1$classifications.correct..percent.)]
+
+# accuracy mean
+mean(conceptDrift1$classifications.correct..percent.)
+
+# kappa
+conceptDrift1$Kappa.Statistic..percent.[length(conceptDrift1$Kappa.Statistic..percent.)]
+
+# kappa mean
+mean(conceptDrift1$Kappa.Statistic..percent.)
+```
+
+
+\section{EJERCICIO 3 (Concept Drift). Entrenar un modelo estático Naïve Bayes sobre 100.000 instancias de la función 2 del generador SEAGenerator. Seguidamente, evaluarlo con un flujo de datos con desvío de concepto generado por el generador de datos SEAGenerator, con un desvío de concepto centrado en la instancia 20.000 en una ventana de 100 instancias. Para simular el desvío de concepto, hacer que el simulador genere la función –f 2 al principio, y luego la función –f 3.}
+
+A continuación el comando a utilizar para el cometido del enunciado:
+
+\textbf{java -cp moa.jar -javaagent:sizeofag.jar moa.DoTask "EvaluateModel -m (LearnModel -l bayes.NaiveBayes -s (generators.SEAGenerator -f 2) -m 100000) -s (ConceptDriftStream -s (generators.SEAGenerator -f 2) -d (generators.SEAGenerator -f 3) -p 20000 -w 100) -i 100000"}
+
+\includegraphics{ex2}
+
+¿Qué está pasando? Vemos que el porcentaje de clasificación, y también el estadístico Kappa, son inferiores en este segundo ejercicio en comparación con el primero.  
+
+Si hiciésemos múltiples ejecuciones y comparásemos las distribuciones de resultados, obtendríamos que hay diferencias significativas entre los dos métodos.
+
+
+¿Qué ocurre?  
+El modelo estacionario se ha entrenado con la función f2 de SEA Generator. Falla con la función f3.  
+Al producirse el cambio de concepto, el modelo estacionario no se re-entrena. El modelo dinámico sí.  
+Esto provoca que el modelo dinámico vaya adaptándose con el tiempo a las nuevas condiciones de los datos y que, globalmente, al final proporcione una mejor tasa de aciertos.
+
+\section{EJERCICIO 4 (Concept Drift). ¿Qué ocurriría si pudiésemos detectar un cambio de concepto y re-entrenar un modelo estacionario?. El resultado no sería un modelo “estacionario”, sino múltiples de ellos entrenados tras detectar cambio de concepto.Se pide: Evaluar, y entrenar online con el método TestThenTrain, un modelo estacionario Naïve Bayes que se adapta (re-entrena) tras la detección de un cambio de concepto mediante el método DDM (función SingleClassifierDrift). Usar el flujo de datos del ejercicio anterior.}
+
+A continuación el comando a utilizar para el cometido del enunciado:
+
+
+\textbf{java -cp moa.jar -javaagent:sizeofag.jar moa.DoTask "EvaluateInterleavedTestThenTrain -l (moa.classifiers.drift.SingleClassifierDrift -l bayes.NaiveBayes -d DDM) -s (ConceptDriftStream -s (generators.SEAGenerator -f 2) -d (generators.SEAGenerator -f 3) -p 20000 -w 100) -i 100000" > conceptDrift2.csv}
+
+Leemos los datos generados...
+```{r}
+conceptDrift2 = read.csv("./datosConceptDrift/conceptDrift2.csv")
+```
+
+
+```{r}
+# mostramos los últimos valores de accuracy y de kappa
+# junto con los valores medios.
+
+# accuracy
+conceptDrift2$classifications.correct..percent.[length(conceptDrift2$classifications.correct..percent.)]
+
+# accuracy mean
+mean(conceptDrift2$classifications.correct..percent.)
+
+# kappa
+conceptDrift2$Kappa.Statistic..percent.[length(conceptDrift2$Kappa.Statistic..percent.)]
+
+# kappa mean
+mean(conceptDrift2$Kappa.Statistic..percent.)
+```
+
+
+Si construyésemos una población de resultados e hiciésemos tests estadísticos de comparación entre este modelo y el anterior:
+\begin{itemize}
+  \item Vemos que el porcentaje de aciertos y el estadístico Kappa mejora sustancialmente
+  \item Es el resultado esperado: Tras un cambio de concepto, un modelo estacionario deja de funcionar. Se debe reentrenar para ser usado en el nuevo contexto.
+\end{itemize}
+
+
+
+
+
+
+
+
+

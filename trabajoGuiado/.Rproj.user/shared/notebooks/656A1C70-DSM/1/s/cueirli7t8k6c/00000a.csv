@@ -1,0 +1,3 @@
+"0","conceptDrift1 = read.csv(""./datosConceptDrift/conceptDrift1.csv"")"
+"0","# Mostrar el acierto del clasificador en el tiempo"
+"0","plot(conceptDrift1$learning.evaluation.instances, conceptDrift1$classifications.correct..percent., ""l"", ylim = c(0,100), col = ""red"")"

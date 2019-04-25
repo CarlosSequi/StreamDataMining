@@ -1,5 +1,4 @@
-"0","t.test(datosNaives,datosHoeffding)
-"
+"0","t.test(datosNaives,datosHoeffding)"
 "1","
 "
 "1","	Welch Two Sample t-test"
