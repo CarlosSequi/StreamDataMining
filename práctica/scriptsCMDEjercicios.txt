@@ -1,0 +1,23 @@
+EJERCICIO 1:
+
+
+for /L %e in (21,1,30) do java -cp moa.jar -javaagent:sizeofag.jar moa.DoTask "EvaluateModel -m (LearnModel -l trees.HoeffdingTree -s (generators.WaveformGenerator -i %e) -m 1000000) -s (generators.WaveformGenerator -i 4) -i 1000000" > ejHF%e.txt
+
+for /L %e in (21,1,30) do java -cp moa.jar -javaagent:sizeofag.jar moa.DoTask "EvaluateModel -m (LearnModel -l trees.HoeffdingAdaptiveTree -s (generators.WaveformGenerator -i %e) -m 1000000) -s (generators.WaveformGenerator -i 4) -i 1000000" > ejHFA%e.txt
+
+
+EJERCICIO 2:
+
+
+for /L %e in (1,1,30) do java -cp moa.jar -javaagent:sizeofag.jar moa.DoTask "EvaluateInterleavedTestThenTrain -l trees.HoeffdingTree -s  (generators.WaveformGenerator -i %e) -i 1000000 -f 10000" > ej2HF%e.csv
+
+
+EJ 33333333333
+
+java -cp moa.jar -javaagent:sizeofag-1.0.0.jar moa.DoTask "EvaluateInterleavedTestThenTrain -l trees.HoeffdingTree -s (generators.RandomRBFGeneratorDrift -r '+str(i)+' -i '+str(i)+' -c 2 -a 7 -n 3 -s 0.001 -k 3) -i 1000000 -f 100000" > ej3-1-'+str(i)+'-'+str(i)+'.csv'
+
+for /L %e in (1,1,30) do java -cp moa.jar -javaagent:sizeofag-1.0.0.jar moa.DoTask "EvaluateInterleavedTestThenTrain -l trees.HoeffdingTree -s (generators.RandomRBFGeneratorDrift -r 1 -i 1 -c 2 -a 7 -n 3 -s 0.001 -k 3) -i 1000000 -f 100000" > ej3-1-1-1.csv'
+
+for /L %e in (1,1,30) do 
+java -cp moa.jar -javaagent:sizeofag.jar moa.DoTask "EvaluateInterleavedTestThenTrain -l trees.HoeffdingTree -s  (generators.WaveformGenerator -i %e) -i 1000000 -f 10000" > ej2HF%e.csv
+

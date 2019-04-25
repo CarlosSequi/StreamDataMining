@@ -1,0 +1,427 @@
+---
+title: "Práctica minería de flujos de datos"
+author: "Carlos Manuel Sequí Sánchez"
+date: "25 de abril de 2019"
+output: pdf_document
+---
+
+alumno: Carlos Manuel Sequí Sánchez
+asignatura: Series temporales y minería de flujos de datos
+Master: ciencias de datos e ingenieria de computadores
+Trabajo autónomo I: Series Temporales
+Fecha entrega: 25-4-2019
+
+\section{TEORÍA}
+
+\subsection{Respuestas tipo test}
+1.El aprendizaje incremental es útil cuando se quiere ganar eficiencia    
+2.La minería de flujo de datos se considera cuando el problema genera datos continuamente    
+3.La cota de Hoeffding sirve para saber cuándo hay suficientes datos para una estimación fiable  
+4.¿Qué características de clusters mantiene el algoritmo BIRCH? Suma lineal, suma cuadrática y número de objetos    
+5.¿El algoritmo Stream maneja concept drift? NO    
+6.¿Qué es el concept drift? Cambios en la dinámica del problema    
+7.¿Cómo gestiona CVFDT el concept drift? Mantiene árboles alternativos     
+8.¿Por qué es útil el ensemble learning en concept drift? Porque aprovecha la diversidad que se genera en los cambios  
+9.¿Cuál es más eficiente entre DDM y ADWIN? DDM es más eficiente    
+10.¿Por qué es controvertida la clasificación en flujo de datos? Porque se requiere al oráculo por siempre  
+11.¿Cómo gestiona ClueStream el concept drif? Mantiene información dobre el tiempo  
+12.¿Por qué es complejo generar reglas de asociación en flujos de datos?  
+
+\section{PRÁCTICAS}
+
+
+\section{2.1. Entrenamiento offline (estacionario) y evaluación posterior.}
+
+\subsection{Entrenar un clasificador HoeffdingTree offline (estacionario, aprender modelo únicamente), sobre un total de 1.000.000 de instancias procedentes de un flujo obtenido por el generador WaveFormGenerator con semilla aleatoria igual a 2. Evaluar posteriormente (sólo evaluación) con 1.000.000 de instancias generadas por el mismo tipo de generador, con semilla aleatoria igual a 4. Repita el proceso varias veces con la misma semilla en evaluación y diferentes semillas en entrenamiento, para crear una población de resultados. Anotar como resultados los valores de porcentajes de aciertos en la clasificación y estadístico Kappa.}  
+
+El comando que vamos a utilizar para entrenar el el siguiente:   
+for /L %e in (1,1,20) do java -cp moa.jar -javaagent:sizeofag.jar moa.DoTask "EvaluateModel -m (LearnModel -l trees.HoeffdingTree -s (generators.WaveformGenerator -i 2) -m 1000000) -s (generators.WaveformGenerator -i 4) -i 1000000"  
+
+A continuación generamos la población de 20 (tanto de Hoeffding Trees como de Adaptative Hoeffding Trees para el siguiente ejercicio) a partir de dicho comando:
+
+\includegraphics{scriptEj1}
+
+Leemos los datos de Hoeffding Trees y creamos su población a partir de los ficheros generados con el script
+```{r}
+datosHF1 = as.data.frame(matrix(0,nrow = 30,ncol = 2))
+names(datosHF1) = c("accuracy","kappa")
+
+for(i in 1:30)
+{
+  nombreFichero = paste(c(paste(c("./datosEj1/ejHF",i),collapse=""),".txt"),collapse="")
+  file = readLines(nombreFichero)
+  
+  # almacenamos el porcentaje de clasificaciones correctas
+  a = sub('.*= ', '', file[2])
+  a = as.double(sub(',','.',a))
+  datosHF1[i,"accuracy"] = a
+  
+  # almacenamos el porcentaje de clasificaciones correctas
+  b = sub('.*= ', '', file[3])
+  b = as.double(sub(',','.',b))
+  datosHF1[i,"kappa"] = b
+}
+
+datosHF1
+```
+
+
+
+\subsection{Repetir el paso anterior, sustituyendo el clasificador por HoeffdingTree adaptativo.}
+
+El comando que vamos a utilizar para entrenar el el siguiente:    
+for /L %e in (1,1,20) do java -cp moa.jar -javaagent:sizeofag.jar moa.DoTask "EvaluateModel -m (LearnModel -l trees.HoeffdingAdaptiveTree -s (generators.WaveformGenerator -i %e) -m 1000000) -s (generators.WaveformGenerator -i 4) -i 1000000" > ejHF%e.txt}  
+
+Como ya habíamos generado los ficheros de datos del Hoeffding adaptativo, leemos los datos de Adaptative Hoeffding Trees y creamos su población a partir de los ficheros generados con el script
+```{r}
+datosHFA1 = as.data.frame(matrix(0,nrow = 20,ncol = 2))
+names(datosHFA1) = c("accuracy","kappa")
+
+for(i in 1:20)
+{
+  nombreFichero = paste(c(paste(c("./datosEj1/ejHFA",i),collapse=""),".txt"),collapse="")
+  file = readLines(nombreFichero)
+  
+  # almacenamos el porcentaje de clasificaciones correctas
+  a = sub('.*= ', '', file[2])
+  a = as.double(sub(',','.',a))
+  datosHFA1[i,"accuracy"] = a
+  
+  # almacenamos el porcentaje de clasificaciones correctas
+  b = sub('.*= ', '', file[3])
+  b = as.double(sub(',','.',b))
+  datosHFA1[i,"kappa"] = b
+}
+
+datosHFA1
+```
+
+\subsection{Responda a la pregunta: ¿Cree que algún clasificador es significativamente mejor que el otro en este tipo de problemas? Razone su respuesta.}
+
+Para averiguar si alguno de los clasificadores es mejor que el otro procedemos a utilizar tests estadísticos. Para ser que test utilizar, testeamos la normalidad de ambas poblaciones con sus histogramas y tests de Saphiro Wilk.  
+
+Para Hoeffding Trees:
+```{r}
+shapiro.test(datosHF1$accuracy)
+hist(datosHF1$accuracy, col="blue", prob = TRUE) 
+lines(density(datosHF1$accuracy))
+```
+El test de Saphiro Wilk, debido al bajo valor del p-value, nos indica que los datos no siguen una distribución normal, sin embargo, tal como podemos observar en el histograma, los datos no siguen una distribución normal debido a la oblicuidad que poseen (skewness), aunque realmente poseen una gran cantidad de datos centrados en un punto, lo que puede ser indicativo de ser buen modelo.
+
+
+Para Adaptive Hoeffding Trees:
+```{r}
+shapiro.test(datosHFA1$accuracy)
+hist(datosHFA1$accuracy, col="red", prob = TRUE) 
+lines(density(datosHFA1$accuracy))
+```
+Al contrario que el modelo anterior, según Saphiro Wilk, estos datos sí que siguen una distribución normal, ya que el p-value es superior a 0.05. Podemos corroborarlo con el histograma que se muestra.  
+
+Al tener tener dos poblaciones siguiendo una distribución normal y otra no, nos decidiremos por utilizar el de Wilcoxon para comprobar si existen diferencias significativas en las soluciones generadas por ambos:
+```{r}
+wilcox.test(datosHF1$accuracy,datosHFA1$accuracy, exact = F)
+```
+
+Al obtener un p-value inferior a 0.05 concretamos que ambos modelos sí poseen diferencias significativas en sus accuracy, por lo que nos decantamos por el modelo que tiene más datos concentrados por encima de 84.4% que el otro, es decir, el Hoeffding Trees estacionario.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\section{2.2. Entrenamiento online.}
+
+\subsection{Entrenar un clasificador HoeffdingTree online, mediante el método Interleaved Test-Then-Train, sobre un total de 1.000.000 de instancias procedentes de un flujo obtenido por el generador WaveFormGenerator con semilla aleatoria igual a 2, con una frecuencia de muestreo igual a 10.000. Pruebe con otras semillas aleatorias para crear una población de resultados. Anotar los valores de porcentajes de aciertos en la clasificación y estadístico Kappa.}
+
+El comando que vamos a utilizar para entrenar el el siguiente:  
+java -cp moa.jar -javaagent:sizeofag.jar moa.DoTask "EvaluateInterleavedTestThenTrain -l trees.HoeffdingTree -s  (generators.WaveformGenerator -i 2) -i 1000000 -f 10000" 
+
+Creamos la población de resultados con distintas semillas igual que en el ejercicio anterior.
+
+Leemos los datos de Hoeffding Trees y creamos su población a partir de los ficheros generados con el script
+
+```{r}
+accuracy = array(dim = 30)
+kapp = array(dim = 30)
+for (i in 1:30)
+{
+  nombreFichero = paste(c(paste(c("./datosEj2/ej2HF",i),collapse=""),".csv"),collapse="")
+  nuevoFichero = read.csv(nombreFichero)
+  nuevoDatoAcc = nuevoFichero$classifications.correct..percent.[length(nuevoFichero$classifications.correct..percent.)]
+  nuevoDatoKap = nuevoFichero$Kappa.Statistic..percent.[length(nuevoFichero$Kappa.Statistic..percent.)]
+  accuracy[i] = nuevoDatoAcc
+  kapp[i] = nuevoDatoKap
+}
+datosHF1 = as.data.frame(cbind(accuracy,kapp))
+names(datosHF1) = c("accuracy","kappa")
+datosHF1
+```
+
+
+
+\subsection{Repetir el paso anterior, sustituyendo el clasificador por HoeffdingTree adaptativo}
+
+El comando que vamos a utilizar para entrenar el el siguiente:  
+java -cp moa.jar -javaagent:sizeofag.jar moa.DoTask "EvaluateInterleavedTestThenTrain -l trees.HoeffdingAdaptativeTree -s  (generators.WaveformGenerator -i 2) -i 1000000 -f 10000"   
+
+Creamos la población de resultados con distintas semillas igual que en el ejercicio anterior.
+
+Leemos los datos de Hoeffding Trees y creamos su población a partir de los ficheros generados con el script
+```{r}
+accuracy = array(dim = 30)
+kapp = array(dim = 30)
+for (i in 1:30)
+{
+  nombreFichero = paste(c(paste(c("./datosEj2/ej2HFA",i),collapse=""),".csv"),collapse="")
+  nuevoFichero = read.csv(nombreFichero)
+  nuevoDatoAcc = nuevoFichero$classifications.correct..percent.[length(nuevoFichero$classifications.correct..percent.)]
+  nuevoDatoKap = nuevoFichero$Kappa.Statistic..percent.[length(nuevoFichero$Kappa.Statistic..percent.)]
+  accuracy[i] = nuevoDatoAcc
+  kapp[i] = nuevoDatoKap
+}
+datosHFA1 = as.data.frame(cbind(accuracy,kapp))
+names(datosHF1) = c("accuracy","kappa")
+datosHFA1
+```
+
+
+
+\subsection{Responda a la pregunta: ¿Cree que algún clasificador es mejor que el otro en este tipo de problemas? Razone su respuesta.}
+
+
+Para averiguar si alguno de los clasificadores es mejor que el otro, tal como hicimos en el ejercicio anterior, procedemos a utilizar tests estadísticos. Para ser que test utilizar, testeamos la normalidad de ambas poblaciones con sus histogramas y tests de Saphiro Wilk.
+
+Para Hoeffding Trees:
+```{r}
+shapiro.test(datosHF1$accuracy)
+hist(datosHF1$accuracy, col="blue", prob = TRUE) 
+lines(density(datosHF1$accuracy))
+```
+
+Para Adaptive Hoeffding Trees:
+```{r}
+shapiro.test(datosHFA1$accuracy)
+hist(datosHFA1$accuracy, col="red", prob = TRUE) 
+lines(density(datosHFA1$accuracy))
+```
+
+Como podemos observar ambas poblaciones tienen un p-value en el test de Saphiro wilk por encima de 0.05, por tanto concluimos que ambos siguen una distribución normal, asñi que haremos uso de un test paramétrico:
+```{r}
+t.test(datosHF1,datosHFA1)
+```
+
+Al resultar un p-value superior a 0.05, concretamos con alta confianza que la media de las poblaciones de datos no difieren de manera significativa, por lo que concretamos que ninguno de los modelos es mejor que el otro. Tiene sentido el resultado obtenido en comparación con el anterior, debido a que gracias al aprendizaje online el modelo Adaptative Hoeffding Trees consigue ponerse al nivel de Hoeffding estacionario en cuanto a acierto.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\section{2.3. Entrenamiento online en datos con concept drift.}
+
+\subsection{Entrenar un clasificador HoeffdingTree online, mediante el método Interleaved Test-Then-Train, sobre un total de 2.000.000 de instancias muestreadas con una frecuencia de 100.000, sobre datos procedentes de un generador de flujos RandomRBFGeneratorDrift, con semilla aleatorio igual a 1 para generación de modelos y de instancias, generando 2 clases, 7 atributos, 3 centroides en el modelo, drift en todos los centroides y velocidad de cambio igual a 0.001. Pruebe con otras semillas aleatorias. Anotar los valores de porcentajes de aciertos en la clasificación y estadístico Kappa. Compruebe la evolución de la curva de aciertos en la GUI de MOA. }
+
+El comando que vamos a utilizar para entrenar el el siguiente:    
+java -cp moa.jar -javaagent:sizeofag.jar moa.DoTask "EvaluateInterleavedTestThenTrain -l trees.HoeffdingTree -s (generators.RandomRBFGeneratorDrift -r 1 -i 1 -c 2 -a 7 -n 3 -s 0.001 -k 3) -i 1000000 -f 100000"
+
+Creamos la población de resultados con distintas semillas igual que en el ejercicio anterior.
+
+Leemos los datos de Hoeffding Trees y creamos su población a partir de los ficheros generados con el script
+
+```{r}
+accuracy = array(dim = 30)
+kapp = array(dim = 30)
+for (i in 1:30)
+{
+  nombreFichero = paste(c(paste(c("./datosEj3/ej3",i),collapse=""),".csv"),collapse="")
+  nuevoFichero = read.csv(nombreFichero)
+  nuevoDatoAcc = nuevoFichero$classifications.correct..percent.[length(nuevoFichero$classifications.correct..percent.)]
+  nuevoDatoKap = nuevoFichero$Kappa.Statistic..percent.[length(nuevoFichero$Kappa.Statistic..percent.)]
+  accuracy[i] = nuevoDatoAcc
+  kapp[i] = nuevoDatoKap
+  
+  # Comprobamos la evolución de la curva de aciertos:
+  if(i==1)
+  {
+    plot(nuevoFichero$learning.evaluation.instances,
+     nuevoFichero$classifications.correct..percent.,
+     "l", ylim = c(0,100), col = "red")
+  }
+}
+datosHF1 = as.data.frame(cbind(accuracy,kapp))
+names(datosHF1) = c("accuracy","kappa")
+datosHF1
+```
+
+
+
+\subsection{Repetir el paso anterior, sustituyendo el clasificador por HoeffdingTree adaptativo}
+
+El comando que vamos a utilizar para entrenar el el siguiente:    
+java -cp moa.jar -javaagent:sizeofag.jar moa.DoTask "EvaluateInterleavedTestThenTrain -l trees.HoeffdingAdaptativeTree -s (generators.RandomRBFGeneratorDrift -r 1 -i 1 -c 2 -a 7 -n 3 -s 0.001 -k 3) -i 1000000 -f 100000"
+
+Creamos la población de resultados con distintas semillas igual que en el ejercicio anterior.
+
+Leemos los datos de Adaptative Hoeffding Trees y creamos su población a partir de los ficheros generados con el script
+
+```{r}
+accuracy = array(dim = 30)
+kapp = array(dim = 30)
+for (i in 1:30)
+{
+  nombreFichero = paste(c(paste(c("./datosEj3/eja3",i),collapse=""),".csv"),collapse="")
+  nuevoFichero = read.csv(nombreFichero)
+  nuevoDatoAcc = nuevoFichero$classifications.correct..percent.[length(nuevoFichero$classifications.correct..percent.)]
+  nuevoDatoKap = nuevoFichero$Kappa.Statistic..percent.[length(nuevoFichero$Kappa.Statistic..percent.)]
+  accuracy[i] = nuevoDatoAcc
+  kapp[i] = nuevoDatoKap
+  
+  # Comprobamos la evolución de la curva de aciertos:
+  if(i==1)
+  {
+    plot(nuevoFichero$learning.evaluation.instances,
+     nuevoFichero$classifications.correct..percent.,
+     "l", ylim = c(0,100), col = "red")
+  }
+}
+datosHFA1 = as.data.frame(cbind(accuracy,kapp))
+names(datosHFA1) = c("accuracy","kappa")
+datosHFA1
+```
+
+\subsection{Responda a la pregunta: ¿Cree que algún clasificador es mejor que el otro en este tipo de problemas? Razone su respuesta}
+
+Para averiguar si alguno de los clasificadores es mejor que el otro, tal como hicimos en el ejercicio anterior, procedemos a utilizar tests estadísticos. Para ser que test utilizar, testeamos la normalidad de ambas poblaciones con sus histogramas y tests de Saphiro Wilk.
+
+Para Hoeffding Trees:
+```{r}
+shapiro.test(datosHF1$accuracy)
+hist(datosHF1$accuracy, col="blue", prob = TRUE) 
+lines(density(datosHF1$accuracy))
+```
+
+Para Adaptive Hoeffding Trees:
+```{r}
+shapiro.test(datosHFA1$accuracy)
+hist(datosHFA1$accuracy, col="red", prob = TRUE) 
+lines(density(datosHFA1$accuracy))
+```
+
+
+Como podemos observar, ambos tests siguen una distribución normal, por lo que aplicamos un test paramétrico para comprobar si sus resultados difieren en gran medida:
+```{r}
+t.test(datosHF1,datosHFA1)
+```
+
+
+Dado el p-value del test obtenido, concretamos con un alto nivel de confianza que los resultados de ambos modelos poseen diferencias significativas, por lo que a la hora de escoger uno de ellos nos quedaríamos con el adaptativo, ya que, tal como vemos en las gráficas de evolución de acierto a lo largo del tiempo, en absoluto le influye el cambio de concepto, por lo que su nivel de acierto se mantiene constante, mientras que en el estacionario disminuye conforme avanza el tiempo.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\section{2.4. Entrenamiento online en datos con concept drift, incluyendo mecanismos para olvidar instancias pasadas.}
+
+\subsection{Repita la experimentación del apartado anterior, cambiando el método de evaluación “Interleaved Test-Then-Train” por el método de evaluación “Prequential”, con una ventana deslizante de tamaño 1.000.}
+
+\subsection{¿Qué efecto se nota en ambos clasificadores? ¿A qué es debido? Justifique los cambios relevantes en los resultados de los clasificadores.}
+
+\section{2.5. Entrenamiento online en datos con concept drift, incluyendo mecanismos para reinicializar modelos tras la detección de cambios de concepto.}
+
+\subsection{ Repita la experimentación del apartado 2.3, cambiando el modelo (learner) a un clasificador simple basado en reemplazar el clasificador actual cuando se detecta un cambio de concepto (SingleClassifierDrift). Como detector de cambio de concepto, usar el método DDM con sus parámetros por defecto. Como modelo a aprender, usar un clasificador HoeffdingTree. }
+
+\subsection{Repita el paso anterior cambiando el clasificador HoeffdingTree por un clasificador HoeffdingTree adaptativo.}
+
+\subsection{ Responda a la siguiente pregunta: ¿Qué diferencias se producen entre los métodos de los apartados 2.3, 2.4 y 2.5? Explique similitudes y diferencias entre las diferentes metodologías, y discuta los resultados obtenidos por cada una de ellas en el flujo de datos propuesto.
+}
+

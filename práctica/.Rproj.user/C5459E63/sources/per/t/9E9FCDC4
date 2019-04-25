@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1556218814342.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3887096253",
+    "id" : "9E9FCDC4",
+    "lastKnownWriteTime" : 1556225988,
+    "last_content_update" : 1556225988832,
+    "path" : "E:/ETSIIT/MÁSTER/Series temporales y mineria de flujos de datos/practica mineria de flujos de datos/StreamDataMining/práctica/practicaDMS.Rmd",
+    "project_path" : "practicaDMS.Rmd",
+    "properties" : {
+        "cursorPosition" : "28,0",
+        "scrollLine" : "0"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}
